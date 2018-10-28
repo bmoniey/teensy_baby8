@@ -1,0 +1,315 @@
+/**
+*Menu.h
+*Inherits from the Adafruit display
+*Tested on an 128x64 pixel display
+*/
+#ifndef MENU_H
+#define MENU_H
+#include "Encoder.h"
+#include "Arduino.h"
+#include "Timer.h"
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define OLED_RESET 4
+#define MENU_MAX_PAGE 10 //Set the max number of pages
+#define MENU_MAX_ITEM 10 //Set the max number of
+#define MENU_MAX_STRING_LEN 32 //remember it's likely a small display
+#define MENU_WINDOW_LEN 3 //number of items which can be shown per page without scrolling
+#define MENU_TITLE_HEIGHT  16
+#define MENU_ITEM_HEIGHT   16
+#define MENU_I2C_ADR 0x3C
+#define MENU_TITLE_TEXT_SIZE 2
+#define MENU_ITEM_TEXT_SIZE 2
+#define MENU_ITEM_SEL_ON 1
+#define MENU_ITEM_SEL_OFF 0
+#define MENU_ITEM_IS_GOTO (uint8_t)(1)
+#define MENU_TICK_US 100000 //100ms
+
+class Page;
+class Menu;
+class Goto;
+
+class Item{
+  friend class Page;
+  friend class Menu;
+  friend class Goto;
+  
+  public:
+  Item(const char * str_,uint8_t isGoto_, uint8_t gotoIdx_){
+    strncpy(str,str_,MENU_MAX_STRING_LEN);
+    isGoto = isGoto_;
+    gotoPageIdx = gotoIdx_;
+  }
+  Item(const char * str_):Item(str_,0,0){
+  }
+  Item():Item("NA",0,0){
+  }
+  
+  virtual void cstr(char * str_) = 0;//fills up string whith what to show on the items line
+  virtual void increment() = 0;//increment the value. to be used when the encoder is turned
+  virtual void decrement() = 0;//decrement the value. to be used when the encoder is turned
+  
+  private:
+  char str[MENU_MAX_STRING_LEN];
+  uint8_t isGoto;
+  uint8_t gotoPageIdx;
+  uint8_t itmIdx;
+  uint8_t pageIdx;
+};
+
+class Goto : public Item{
+  public:
+  Goto(uint8_t gotoPageIdx_,const char * str_) : Item(str_,MENU_ITEM_IS_GOTO,gotoPageIdx_){
+  }
+  void increment(){}
+  void decrement(){}
+  void cstr(char * str){snprintf(str,MENU_MAX_STRING_LEN,"GOTO:%d",pageIdx);}
+  private:
+};
+
+class IntItem : public Item{
+  public:
+
+  IntItem(const char * str_, int16_t val_, int16_t val_min_,int16_t val_max_, int16_t inc_): Item(str_){
+    val = val_;
+    val_min = val_min_;
+    val_max = val_max_;
+    inc = inc_;
+  }
+  
+  IntItem(const char * str_) : IntItem(str_,0,-32767,32767,1){
+  }
+  
+  IntItem(const char * str_, int16_t val_):IntItem(str_,val_,-32767,32767,1){
+  }
+
+  IntItem(const char * str_, int16_t val_, int16_t min_, int16_t max_) : IntItem(str_,val_,min_,max_,1){
+  }
+  
+  IntItem() : IntItem("NA",0,-32767,32767,1){
+  }
+  
+  int16_t getVal(){
+    return val;
+  }
+
+  void setVal(int16_t val_){
+    val = val_;
+  }
+
+  void setIncrement(int16_t inc_){
+    if(inc_ > 0){
+      inc = inc_;
+    }
+  }
+
+  void increment(){
+    val+=inc;
+    if(val > val_max){val = val_max;}
+  }
+
+  void decrement(){
+    val-=inc;
+    if(val < val_min){val = val_min;}
+  }
+
+  void cstr(char * str_){
+    snprintf(str_,MENU_MAX_STRING_LEN,"%d",val);
+  }
+  
+  private:
+  int16_t val;
+  int16_t val_min;
+  int16_t val_max;
+  int16_t inc; 
+};
+
+class FloatItem : public Item{
+  public:
+
+  FloatItem(const char * str_, float val_, float val_min_,float val_max_, float inc_): Item(str_){
+    val = val_;
+    val_min = val_min_;
+    val_max = val_max_;
+    inc = inc_;
+  }
+  
+  FloatItem(const char * str_) : FloatItem(str_,0,-1000,1000,0.1){
+  }
+  
+  FloatItem(const char * str_, float val_):FloatItem(str_,val_,-1000,1000,0.1){
+  }
+
+  FloatItem(const char * str_, float val_, float min_, float max_) : FloatItem(str_,val_,min_,max_,0.1){
+  }
+  
+  float getVal(){
+    return val;
+  }
+
+  void setVal(float val_){
+      val = val_;
+  }
+  
+  void setIncrement(float inc_){
+    if(inc_>0){
+      inc = inc_;
+    }
+  }
+
+  void increment(){
+    val+=inc;
+    if(val > val_max){val = val_max;}
+  }
+
+  void decrement(){
+    val-=inc;
+    if(val < val_min){val = val_min;}
+  }
+
+  void cstr(char * str_){
+    snprintf(str_,MENU_MAX_STRING_LEN,"%2.3f",val);
+  }
+  
+  private:
+  float val;
+  float val_min;
+  float val_max;
+  float inc; 
+};
+
+class ListItem : public Item{
+  public:
+
+  ListItem(const char * str_, const char * list_[], uint8_t length_): Item(str_){
+    list   = list_;
+    length = length_;
+    idx    = 0;
+  }
+  
+  float getVal(){
+    return idx;
+  }
+
+  void setVal(float idx_){
+    if(idx>=0 && idx < length -1){
+      idx = idx_;
+    }
+  }
+
+  void increment(){
+    idx++;
+    if(idx > length - 1 ){idx=0;}
+  }
+
+  void decrement(){
+    if(idx == 0){
+      idx = length - 1;
+    }else{
+      idx--;
+    }
+  }
+
+  void cstr(char * str_){
+    if(list[idx]!=NULL){
+      snprintf(str_,MENU_MAX_STRING_LEN,"%s",list[idx]);
+    }else{
+      snprintf(str_,MENU_MAX_STRING_LEN,"NULL");
+    }
+  }
+  
+  private:
+  const char ** list;
+  uint8_t idx;
+  uint8_t length; 
+};
+
+class Page{
+  friend class Menu;
+	public:
+Page (const char * title_){
+  strncpy(title,title_,MENU_MAX_STRING_LEN);
+		numberOfItems=0;
+		for(int ii=0;ii<MENU_MAX_ITEM;ii++){
+			items[ii]=NULL;
+		}
+	}
+ 
+Page():Page("NOT"){
+
+}
+
+	void addItem(Item * pItm){
+		if(numberOfItems < MENU_MAX_ITEM){
+			items[numberOfItems] = pItm;
+      pItm->itmIdx=numberOfItems;
+			numberOfItems++;
+		}
+	};
+	
+  uint8_t getNumberOfItems(){
+    return numberOfItems;
+  }
+	
+	private:
+	char title[MENU_MAX_STRING_LEN];
+	uint8_t numberOfItems;//the number of items on this page
+					 //when addItem is called this gets incremented
+	Item * items[MENU_MAX_ITEM];
+};
+
+class Menu : public Adafruit_SSD1306{
+	  public:
+	  Menu() :
+	  enc(ENC_DIR_CW_POS,ENC_PMAX,ENC_PMIN){
+		  Adafruit_SSD1306(OLED_RESET);
+		  pageIdx = 0;
+		  numberOfPages=0;
+		  for(int ii=0;ii<MENU_MAX_PAGE;ii++){
+			  pages[ii]=NULL;
+		  }
+     itmTopIdx = 0;//item at top of page
+     itmSelIdx =0;
+     itmBotIdx = MENU_WINDOW_LEN-1;//item at bottom of page
+	  }
+	  void begin(void);//call this the first time 
+	  void update(void);//call this to update the current page
+    void reset(void);
+    
+	  void addPage(Page * pPage){
+		  if(numberOfPages<MENU_MAX_PAGE){
+			  pages[numberOfPages]= pPage;
+        for(int ii = 0; ii < pPage->numberOfItems; ii++){
+          pPage->items[ii]->pageIdx = numberOfPages;
+        }
+			  numberOfPages++;
+		  }
+	  }
+    void readEncClkISR(void);
+    void readEncSwISR(void);
+    uint8_t getNumberOfPages(){
+      return numberOfPages;
+    }
+    
+	  private:
+    //todo implement state
+    //scroll,increment,screensaver
+    //enum{enSMInit,enSMScroll,enSMInc,enSMSS} enSMState;
+    //uint8_t onEntry;//used to set up entry into a state
+    void jump(void);
+	  void scroll(void);
+    void increment(void);
+    uint8_t i2cAddr;
+    void draw(void);
+	  Encoder enc;//the encoder
+	  int8_t pageIdx;//current page
+    int8_t itmTopIdx;//item at top of page
+    int8_t itmBotIdx;//item at bottom of page
+    int8_t itmSelIdx;//selected item
+    uint8_t itmSel;//
+	  int8_t numberOfPages;
+    char cstr[255];
+	  Page * pages[MENU_MAX_PAGE];
+    Timer timer;//used by the screen saver
+};
+#endif
