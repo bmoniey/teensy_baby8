@@ -1,5 +1,5 @@
 # teensy_baby8
-music sequencer based on teensy3.2 micro
+Music sequencer based on teensy3.2 micro
 
 Features:
 8 Steps, 32 divisions per step
@@ -13,6 +13,11 @@ Features:
 *Button to play note
 
 *Buttone to reset sequence
+
+PCF8574
+Uses PCF8574 IO expander to read buttons, drive LEDS and issue an interrupt when any of the input IO's change.
+The design used 2 of the boards each driving 4 LEDS and reading 4 Buttons. The PCF8574 library is an adaptation of 
+https://github.com/xreef/PCF8574_library
 
 MIDI - This sequencer sends MIDI via serial.
 Used midi commands send via serial to a program like Ableton Live. Serial is used to be compatible with older synthesizers.
