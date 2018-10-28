@@ -14,7 +14,7 @@ Features:
 
 *Buttone to reset sequence
 
-MIDI - This sequmcer sends MIDI.
+MIDI - This sequencer sends MIDI via serial.
 Used midi commands send via serial to a program like Ableton Live. Serial is used to be compatible with older synthesizers.
 
 Oled Display SSD1306 128 x 64
