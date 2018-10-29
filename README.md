@@ -13,23 +13,23 @@ Music sequencer based on teensy3.2 micro
 
 	Lights when button is pressed
 
-##Buttons:
+## Buttons:
 
 	Regular Mode: Just to plays notes on a selected channel
 
 	Skip Mode: Buttons cause sequencer to reset at the step of the pressed button
 
-##PCF8574
+## PCF8574
 
 Uses PCF8574 IO expander to read buttons, drive LEDS and issue an interrupt when any of the input IO's change.
 The design used 2 of the boards each driving 4 LEDS and reading 4 Buttons. The PCF8574 library is an adaptation of 
 https://github.com/xreef/PCF8574_library
 
-##MIDI - This sequencer sends MIDI via serial.
+## MIDI - This sequencer sends MIDI via serial.
 
 	Used midi commands send via serial to a program like Ableton Live. Serial is used to be compatible with older synthesizers.
 
-##OLED Display SSD1306 128 x 64
+## OLED Display SSD1306 128 x 64
 
 	..*used to provide menu interface to make changes to the behaviour of the sequencer
 
@@ -39,14 +39,14 @@ https://github.com/xreef/PCF8574_library
 
 	..*turn on/off tracks
 
-##Encoder KY-40 (Amazon)
+## Encoder KY-40 (Amazon)
 
 	..*used incremental encoder with push-button to navigate menu
 
 	..*Custom class used to handle increment,decrement and push-button events.
 	provides tracker for position and direction, and interrupts.
 
-##Menu
+## Menu
 
 Class which derives from the Adafruit SSD1306 and GFX Library
 
