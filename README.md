@@ -20,15 +20,18 @@ Uses PCF8574 IO expander to read buttons, drive LEDS and issue an interrupt when
 The design used 2 of the boards each driving 4 LEDS and reading 4 Buttons. The PCF8574 library is an adaptation of 
 https://github.com/xreef/PCF8574_library
 
-## 4. MIDI - This sequencer sends MIDI via serial.
-	Uses midi commands send via serial to a program like Ableton Live.
-	Serial is used to be compatible with older synthesizers.
+## 4. MIDI - This sequencer sends MIDI via serial port on Teensy 3.2
+	Uses MIDI commands sent via serial to a program like Ableton Live.
+	Needs a USB to MIDI adpatper.
 
 ## 5. OLED Display SSD1306 128 x 64
 * Used to provide menu interface to make changes to the behaviour of the sequencer
 * Set BPM (beats per minute)
 * Select MIDI channel
-* turn On/Fff tracks
+* Turn On/Off tracks
+* Select Octave
+* Set Note Velocity
+* Select mode of operation for buttons
 
 ## 6. Encoder KY-40 (Amazon)
 * Uses incremental encoder with push-button to navigate menu
@@ -36,11 +39,13 @@ https://github.com/xreef/PCF8574_library
 provides tracker for position and direction, and interrupts.
 
 ## 7. Menu
+Class which derives from the Adafruit SSD1306 and GFX Library for simple text based
+menu system. Encoder moves focus up and down page. Depress button to select. While selected
+the item can be manipulated. Changes take immediate effect!
 
-Class which derives from the Adafruit SSD1306 and GFX Library
-	See:
-	https://github.com/adafruit/Adafruit_SSD1306
-	https://github.com/adafruit/Adafruit-GFX-Library
+If Adafruit libraries are not already installed in your arduino lib then see here:
+https://github.com/adafruit/Adafruit_SSD1306
+https://github.com/adafruit/Adafruit-GFX-Library
 
 ### 8 Menu Elements:
 
