@@ -22,7 +22,7 @@ https://github.com/xreef/PCF8574_library
 
 ## 4. MIDI - This sequencer sends MIDI via serial port on Teensy 3.2
 	Uses MIDI commands sent via serial to a program like Ableton Live.
-	Needs a USB to MIDI adpatper.
+	Needs a USB to MIDI adapter.
 
 ## 5. OLED Display SSD1306 128 x 64
 * Used to provide menu interface to make changes to the behaviour of the sequencer
@@ -44,6 +44,7 @@ menu system. Encoder moves focus up and down page. Depress button to select. Whi
 the item can be manipulated. Changes take immediate effect!
 
 If Adafruit libraries are not already installed in your arduino lib then see here:
+
 https://github.com/adafruit/Adafruit_SSD1306
 https://github.com/adafruit/Adafruit-GFX-Library
 
